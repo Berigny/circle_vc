@@ -1,4 +1,4 @@
-const express = require("express");
+/*const express = require("express");
 const axios = require("axios");
 require("dotenv").config();
 
@@ -60,4 +60,54 @@ app.post("/issue-vc", async (req, res) => {
   }
 });
 
-app.listen(3001, () => console.log("Backend running on port 3001"));
+app.listen(3001, () => console.log("Backend running on port 3001"));*/
+
+
+require('dotenv').config();
+const express = require("express");
+const axios = require("axios");
+
+const app = express();
+app.use(express.json());
+
+app.post("/issue-vc", async (req, res) => {
+  const { userId, email } = req.body;
+
+  const authToken = await getAuth0Token();
+
+  const vcPayload = {
+    credential: {
+      "@context": ["https://www.w3.org/2018/credentials/v1"],
+      "type": ["VerifiableCredential"],
+      "issuer": "did:example:issuer",
+      "credentialSubject": {
+        "id": `did:example:${userId}`,
+        "email": email,
+        "event": "Faster Zebra Conference 2024"
+      }
+    }
+  };
+
+  try {
+    const response = await axios.post(
+      "https://your-auth0-domain/vc/issue",
+      vcPayload,
+      { headers: { Authorization: `Bearer ${authToken}` } }
+    );
+    res.json(response.data);
+  } catch (error) {
+    res.status(500).json({ error: error.response.data });
+  }
+});
+
+async function getAuth0Token() {
+  const response = await axios.post("https://your-auth0-domain/oauth/token", {
+    client_id: process.env.AUTH0_CLIENT_ID,
+    client_secret: process.env.AUTH0_CLIENT_SECRET,
+    audience: "https://your-auth0-domain/",
+    grant_type: "client_credentials"
+  });
+  return response.data.access_token;
+}
+
+app.listen(5000, () => console.log("Server running on port 5000"));
