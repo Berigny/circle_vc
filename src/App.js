@@ -1,6 +1,17 @@
 import logo from './logo.svg';
 import './App.css';
+import LoginButton from './LoginButton';
 
+function App() {
+  return (
+    <div>
+      <h1>My App</h1>
+      <LoginButton />
+    </div>
+  );
+}
+
+/*
 function App() {
   return (
     <div className="App">
@@ -20,6 +31,6 @@ function App() {
       </header>
     </div>
   );
-}
+}*/
 
 export default App;
