@@ -1,0 +1,27 @@
+import React, { useEffect, useState } from "react";
+import { useAuth0 } from "@auth0/auth0-react";
+import axios from "axios";
+
+const PrivatePageRedirect = () => {
+  const { user, isAuthenticated } = useAuth0();
+  const [vc, setVc] = useState(null);
+
+  useEffect(() => {
+    if (isAuthenticated && !vc) {
+      axios.post("http://localhost:5000/issue-vc", {
+        userId: user.sub,
+        email: user.email
+      })
+      .then(response => {
+        const issuedVc = encodeURIComponent(JSON.stringify(response.data));
+        setVc(issuedVc);
+        window.location.href = `https://community.fasterzebra.com/share/6I1Xlo22V70qznFC?vc=${issuedVc}`;
+      })
+      .catch(error => console.error("VC Issuance Error:", error));
+    }
+  }, [isAuthenticated, user, vc]);
+
+  return <div>Redirecting with Verifiable Credential...</div>;
+};
+
+export default PrivatePageRedirect;
