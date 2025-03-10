@@ -1,22 +1,49 @@
 const express = require("express");
 const axios = require("axios");
+require("dotenv").config();
+
 const app = express();
 app.use(express.json());
-require('dotenv').config();
+
+// Function to dynamically get the access token from Auth0
+const getAccessToken = async () => {
+  try {
+    const response = await axios.post(
+      `https://${process.env.AUTH0_DOMAIN}/oauth/token`,
+      {
+        grant_type: "client_credentials",
+        client_id: process.env.AUTH0_CLIENT_ID,
+        client_secret: process.env.AUTH0_CLIENT_SECRET,
+        audience: process.env.AUTH0_AUDIENCE || `https://${process.env.AUTH0_DOMAIN}/api/v2/`,
+      }
+    );
+    return response.data.access_token;
+  } catch (error) {
+    console.error(
+      "Error getting access token:",
+      error.response ? error.response.data : error.message
+    );
+    throw new Error("Failed to get access token");
+  }
+};
 
 app.post("/issue-vc", async (req, res) => {
   const { userId, templateId } = req.body;
   try {
+    const accessToken = await getAccessToken();
+    const vcIssueUrl = `https://${process.env.AUTH0_DOMAIN}/api/vc/issue`; // Use env variable for domain
     const response = await axios.post(
-      "https://YOUR_AUTH0_LAB_DOMAIN/api/vc/issue",
+      vcIssueUrl,
       {
         user_id: userId,
         template_id: templateId,
-        redirect_uri: "https://your-app.com/issuance-complete",
+        redirect_uri:
+          process.env.REDIRECT_URI || "https://your-app.com/issuance-complete",
       },
       {
         headers: {
-          Authorization: `Bearer ${process.env.AUTH0_MANAGEMENT_TOKEN}`,
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/json",
         },
       }
     );
@@ -25,6 +52,10 @@ app.post("/issue-vc", async (req, res) => {
       deepLink: response.data.deepLink,
     });
   } catch (error) {
+    console.error(
+      "Error issuing VC:",
+      error.response ? error.response.data : error.message
+    );
     res.status(500).json({ error: "Failed to issue VC" });
   }
 });
