@@ -2,6 +2,7 @@ const express = require("express");
 const axios = require("axios");
 const app = express();
 app.use(express.json());
+require('dotenv').config();
 
 app.post("/issue-vc", async (req, res) => {
   const { userId, templateId } = req.body;
