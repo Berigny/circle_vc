@@ -45,4 +45,6 @@ async function getAuth0Token() {
   return response.data.access_token;
 }
 
-app.listen(5000, () => console.log("✅ Server running on port 5000"));
+const PORT = process.env.PORT || 5050;
+app.listen(PORT, () => console.log(`✅ Server running on port ${PORT}`));
+
