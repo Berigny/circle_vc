@@ -11,7 +11,7 @@ const SlackLogin = () => {
     if (isAuthenticated && user) {
       console.log("✅ User authenticated:", user);
 
-      axios.get(`https://YOUR_AUTH0_DOMAIN/userinfo`, {
+      axios.get(`https://dev-lyd8zg4866wjaxih.us.auth0.com/userinfo`, {
         headers: { Authorization: `Bearer ${user.sub}` }
       })
       .then(response => {
@@ -21,7 +21,7 @@ const SlackLogin = () => {
           setIsAuthorized(true);
           setLoadingMessage("✅ Access granted! Redirecting...");
           setTimeout(() => {
-            window.location.href = `https://slack.com/app_redirect?team=YOUR_TEAM_ID`;
+            window.location.href = `https://slack.com/app_redirect?team=T02UH8HA6S3`;
           }, 2000);
         } else {
           alert("❌ Access Denied: You must have a Verifiable Credential.");
