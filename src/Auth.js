@@ -33,7 +33,7 @@ const SlackLogin = () => {
         alert("Error fetching credentials. Please try again.");
       });
     }
-  }, [isAuthenticated, user]);
+  }, [isAuthenticated]);
 
   return (
     <div style={{ textAlign: "center", marginTop: "50px" }}>
@@ -45,7 +45,13 @@ const SlackLogin = () => {
 
       {!isAuthenticated ? (
         <button
-          onClick={() => loginWithRedirect({ connection: "slack" })}
+          onClick={() => loginWithRedirect({
+            connection: "slack",
+            authorizationParams: {
+              client_id: "oGzpVDcNA9n3OYvzTzDtcMVGGLyp0efz",
+              redirect_uri: "https://fzvc-zg4j--3000--495c5120.local-credentialless.webcontainer.io"
+            }
+          })}
           style={{
             padding: "10px 20px",
             backgroundColor: "#4A154B",
@@ -83,4 +89,3 @@ const SlackLogin = () => {
 };
 
 export default SlackLogin;
-/*asdfdsf8*/
