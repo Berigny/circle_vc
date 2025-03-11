@@ -21,7 +21,7 @@ app.post("/issue-vc", async (req, res) => {
             "credentialSubject": {
                 "id": `did:example:${userId}`,
                 "email": email,
-                "event": "Faster Zebra Conference 2024"
+                "event": "Circle Member Events 2024"
             }
         }
     };
