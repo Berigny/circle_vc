@@ -1,0 +1,24 @@
+name: Deploy Backend
+
+on: [push]  # Runs on every push
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up environment variables
+        run: |
+          echo "AUTH0_CLIENT_ID=${{ secrets.AUTH0_CLIENT_ID }}" >> $GITHUB_ENV
+          echo "AUTH0_CLIENT_SECRET=${{ secrets.AUTH0_CLIENT_SECRET }}" >> $GITHUB_ENV
+          echo "AUTH0_DOMAIN=${{ secrets.AUTH0_DOMAIN }}" >> $GITHUB_ENV
+          echo "AUTH0_AUDIENCE=${{ secrets.AUTH0_AUDIENCE }}" >> $GITHUB_ENV
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Start the backend
+        run: node backend.js

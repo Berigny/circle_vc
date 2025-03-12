@@ -1,8 +1,14 @@
 import React from "react";
 import QRCode from "qrcode.react";
 
+// Retrieve Auth0 variables from environment
+const auth0Domain = process.env.REACT_APP_AUTH0_DOMAIN || "your-default.auth0.com";
+const clientId = process.env.REACT_APP_AUTH0_CLIENT_ID || "your-default-client-id";
+const redirectUri = process.env.REACT_APP_AUTH0_REDIRECT_URI || "https://your-app.com/auth-callback";
+
 const QRSignUp = () => {
-  const auth0SignupURL = "https://your-auth0-domain/authorize?client_id=YOUR_CLIENT_ID&response_type=code&redirect_uri=https://your-app.com/auth-callback";
+  // Dynamically generate the Auth0 signup URL
+  const auth0SignupURL = `https://${auth0Domain}/authorize?client_id=${clientId}&response_type=code&redirect_uri=${redirectUri}`;
 
   return (
     <div>

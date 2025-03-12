@@ -1,18 +1,34 @@
 require("dotenv").config();
 const express = require("express");
 const axios = require("axios");
+const cors = require("cors");
 
 const app = express();
-app.use(express.json()); // ✅ Ensure JSON body parsing is enabled
+app.use(express.json()); // ✅ Enable JSON body parsing
+app.use(cors()); // ✅ Allow frontend to communicate with backend
 
-console.log("✅ Initializing backend server...");
+console.log("🚀 Initializing backend server...");
 
-// ✅ Debug log: Registering routes
+// ✅ Load Environment Variables (Ensure they exist)
+const AUTH0_DOMAIN = process.env.AUTH0_DOMAIN;
+const AUTH0_CLIENT_ID = process.env.AUTH0_CLIENT_ID;
+const AUTH0_CLIENT_SECRET = process.env.AUTH0_CLIENT_SECRET;
+const AUTH0_AUDIENCE = process.env.AUTH0_AUDIENCE || `https://${AUTH0_DOMAIN}/`;
+
+if (!AUTH0_CLIENT_ID || !AUTH0_CLIENT_SECRET || !AUTH0_DOMAIN) {
+    console.error("❌ Missing required Auth0 environment variables!");
+    process.exit(1); // ❌ Stop execution if env variables are missing
+}
+
+console.log("✅ Auth0 Config Loaded");
+
+// ✅ Debug: Register Routes
 console.log("✅ Registering /issue-vc route");
 
+// 🔹 **Route: Issue Verifiable Credential**
 app.post("/issue-vc", async (req, res) => {
-    console.log("✅ Received POST request to /issue-vc");  // Debug log
-    console.log("📩 Request Body:", req.body);
+    console.log("📩 Received POST request to /issue-vc");
+    console.log("🔍 Request Body:", req.body);
 
     const { userId, email } = req.body;
     if (!userId || !email) {
@@ -21,9 +37,12 @@ app.post("/issue-vc", async (req, res) => {
     }
 
     try {
+        console.log("🔄 Retrieving Auth0 Token...");
         const authToken = await getAuth0Token();
+
         console.log("🔑 Auth0 Token Retrieved Successfully");
 
+        // ✅ Build Verifiable Credential Payload
         const vcPayload = {
             credential: {
                 "@context": ["https://www.w3.org/2018/credentials/v1"],
@@ -37,8 +56,10 @@ app.post("/issue-vc", async (req, res) => {
             }
         };
 
+        console.log("📤 Sending VC Issuance Request...");
+
         const response = await axios.post(
-            "https://dev-lyd8zg4866wjaxih.us.auth0.com/vc/issue",
+            `https://${AUTH0_DOMAIN}/vc/issue`,
             vcPayload,
             { headers: { Authorization: `Bearer ${authToken}` } }
         );
@@ -51,17 +72,18 @@ app.post("/issue-vc", async (req, res) => {
     }
 });
 
+// 🔹 **Function: Get Auth0 Access Token**
 async function getAuth0Token() {
     try {
         console.log("🔄 Requesting Auth0 Token...");
-        const response = await axios.post("https://dev-lyd8zg4866wjaxih.us.auth0.com/oauth/token", {
-            client_id: process.env.AUTH0_CLIENT_ID,
-            client_secret: process.env.AUTH0_CLIENT_SECRET,
-            audience: "https://dev-lyd8zg4866wjaxih.us.auth0.com/",
+        const response = await axios.post(`https://${AUTH0_DOMAIN}/oauth/token`, {
+            client_id: AUTH0_CLIENT_ID,
+            client_secret: AUTH0_CLIENT_SECRET,
+            audience: AUTH0_AUDIENCE,
             grant_type: "client_credentials"
         });
 
-        console.log("✅ Auth0 Token Retrieved");
+        console.log("✅ Auth0 Token Retrieved Successfully");
         return response.data.access_token;
     } catch (error) {
         console.error("❌ Auth0 Token Request Failed:", error.response?.data || error.message);
@@ -73,5 +95,5 @@ async function getAuth0Token() {
 const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => console.log(`✅ Server running on port ${PORT}`));
 
-// ✅ Export `app` for debugging
+// ✅ Export for testing/debugging
 module.exports = app;
