@@ -1,23 +1,52 @@
-name: Deploy Backend
+name: Deploy React Frontend & Node.js Backend
 
-on: [push]
+on:
+  push:
+    branches:
+      - main # Run deployment when pushing to the main branch
 
 jobs:
-  deploy:
+  build-and-deploy:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
+      - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Inject GitHub Secrets as Environment Variables
+      # 🔹 Inject GitHub Secrets as Environment Variables for Both Frontend & Backend
+      - name: Inject GitHub Secrets
         run: |
-          echo "AUTH0_CLIENT_ID=${{ secrets.AUTH0_CLIENT_ID }}" >> $GITHUB_ENV
           echo "AUTH0_DOMAIN=${{ secrets.AUTH0_DOMAIN }}" >> $GITHUB_ENV
+          echo "AUTH0_CLIENT_ID=${{ secrets.AUTH0_CLIENT_ID }}" >> $GITHUB_ENV
           echo "AUTH0_REDIRECT_URI=${{ secrets.AUTH0_REDIRECT_URI }}" >> $GITHUB_ENV
+          echo "PORT=8080" >> $GITHUB_ENV # Ensuring backend runs on correct port
 
-      - name: Install dependencies
-        run: npm install
+      # 🔹 Set up Node.js (Required for both React & Backend)
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
 
-      - name: Start the backend
-        run: node backend.js
+      # 🔹 Install Backend Dependencies and Start Server
+      - name: Install and Start Backend
+        working-directory: ./ # Change if your backend is in a subfolder (e.g., `backend/`)
+        run: |
+          npm install
+          nohup node backend.js & # Runs the backend in the background
+
+      # 🔹 Install Frontend Dependencies and Build React App
+      - name: Install and Build Frontend
+        working-directory: ./ # Change if your React app is in a subfolder (e.g., `frontend/`)
+        run: |
+          npm install
+          npm run build # Builds the React app for production
+
+      # 🔹 Deploy to a Hosting Service (Optional - Change for your provider)
+      - name: Deploy Frontend to Vercel (or Netlify)
+        run: |
+          npm install -g vercel
+          vercel --prod --token=${{ secrets.VERCEL_TOKEN }} # Replace with your hosting method
+
+      # 🔹 Final Confirmation
+      - name: Deployment Successful
+        run: echo "🚀 Deployment completed successfully!"
